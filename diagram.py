@@ -19,8 +19,9 @@ RED = (255,   0,   0)
 BLUE = (0,   0, 255)
 # A - 65, a - 97
 
+station_number = int(input("Insert station number: "))
 db_list = []
-file_name = "station_test{0}.csv". format(4)
+file_name = "data/station_test{0}.csv". format(station_number)
 
 # PI = math.pi
 # 화면 사이즈, 튜플 형식
@@ -34,7 +35,7 @@ width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, �
 screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
 
 # 화면 제목
-pygame.display.set_caption("{0} 단선도".format(file_name))
+pygame.display.set_caption("Station {0} 단선도".format(station_number))
 
 
 def drawer(scr, line, data, x, y):
@@ -110,7 +111,6 @@ def ds_draw(scr, data):
         x = 0
         y = 0
         if name.isdigit():
-            print(name)
             if len(name) == 3:
                 x = int(name[1])
                 y = int(name[2])
