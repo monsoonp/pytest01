@@ -38,15 +38,16 @@ screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESI
 station_info = sys.stdin
 title = ""
 for row in station_info:
-    if row.strip() != "":
-        if not row or row.startswith("#") or row.startswith("=") or row.startswith("SS"):
-            if row.startswith("SS"):
-                title = row
+    row = row.strip()
+    if row != "":
+        if not row or row.startswith(("#", "=")):
             continue
+        elif row.startswith("SS"):
+            title = row
         else:
-            print(row, db_list)
             value = row.split(",")
-            db_list.append({"name": value[0], "conn": value[1].replace(" ", "").replace("\n", "")})
+            db_list.append({"name": value[0], "conn": value[1].strip()})
+            print(row, db_list)
 
 # 화면 제목
 pygame.display.set_caption("Station {0} 단선도".format(title))
