@@ -4,7 +4,6 @@ import re
 import sys
 import json
 import subprocess
-import random
 
 pygame.init()
 
@@ -25,14 +24,20 @@ BLUE = (0,   0, 255)
 
 video_infos = pygame.display.Info()  # pygame, 화면정보
 width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, 높이
-# 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만)
+# 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만 적용)
 screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
-with open('oneline_config.json') as conf:
-    config = json.load(conf)
+# with open('oneline_config.json') as conf:
+#     config = json.load(conf)
 
 # data
 title = ""
-db_list = []
+db_list = []    # CB, DS 목록
+# Loop until the user clicks the close button.
+done = False
+menu = True
+station_number = 0
+# Used to manage how fast the screen updates
+clock = pygame.time.Clock()
 
 
 def drawer(scr, line, data, x, y):
@@ -160,12 +165,6 @@ x_position = pos[0]
 y_position = pos[1]
 """
 
-# Loop until the user clicks the close button.
-done = False
-menu = True
-station_number = 0
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
 # -------- Main Program Loop -----------
 while not done:
     # --- Main event loop
@@ -185,33 +184,27 @@ while not done:
             elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7]:
                 station_number = event.key - 48  # 0 = 48
                 menu = False
-                station_info = subprocess.getoutput("./shmon {0} -n".format(station_number))
 
-                for row in station_info:
-                    row = row.strip()
-                    if row != "":
-                        if row.startswith(("#", "=")):
-                            continue
-                        elif row.startswith("SS"):
-                            title = row
-                        else:
-                            value = row.split(",")
-                            db_list.append({"name": value[0], "conn": value[1].strip()})
-    screen.fill(BLACK)
+    # 메뉴
     if menu:
         pygame.display.set_caption("MENU")
-
-        font = pygame.font.SysFont('malgungothic', 25, True, False)
-        text = font.render("=========== MENU ===========", True, WHITE)
-        screen.blit(text, [400, 400])
-        text = font.render("Press Station Number (1~7)", True, WHITE)
-        screen.blit(text, [400, 600])
-        text = font.render("Back to MENU (M)", True, WHITE)
-        screen.blit(text, [400, 800])
+        screen.fill(BLACK)
+        font = pygame.font.SysFont('malgungothic', 35, True, False)
+        text = font.render("=========== 메뉴 ===========", True, WHITE)
+        screen.blit(text, [100, 50])
+        text = font.render("변전소 번호를 입력하세요. (1~7)", True, WHITE)
+        screen.blit(text, [100, 150])
+        text = font.render("메뉴로 돌아가기 (M), 종료 (ESC)", True, WHITE)
+        screen.blit(text, [100, 250])
 
         clock.tick(1)
+
+    # 단선도
     else:
-        station_info = subprocess.getoutput("./shmon {0} -n".format(station_number))
+        # station_info = subprocess.getoutput("./shmon {0} -n".format(station_number))
+        # station_info = subprocess.Popen(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE, encoding="utf8")  # split doesn't exist
+        station_info = subprocess.run(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
+        screen.fill(BLACK)
         for row in station_info:
             row = row.strip()
             if row != "":
@@ -235,9 +228,9 @@ while not done:
 
         for i in db_list:
             ds_draw(screen, i)
-        pygame.draw.rect(screen, (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)),[50, 50, 15, 15], 0)
+
         clock.tick(0.2)
-    
+
     # pygame.display.flip()
     pygame.display.update()
 
