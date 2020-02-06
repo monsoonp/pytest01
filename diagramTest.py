@@ -20,7 +20,7 @@ BLUE = (0,   0, 255)
 # A - 65, a - 97
 
 db_list = []
-file_name = "station{0}.csv". format(4)
+file_name = "data/station{0}.csv". format(4)
 
 # PI = math.pi
 # 화면 사이즈, 튜플 형식
