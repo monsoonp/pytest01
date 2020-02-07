@@ -5,6 +5,9 @@ import random
 import csv
 import re
 import sys
+import json
+
+import oneline_config
 
 # import testClass
 # from test.testClass import Address
@@ -157,6 +160,14 @@ def ds_draw(scr, data):
 
         drawer(scr, "sec", data, x_sec, y_sec)
 
+
+# py파일 import
+config = oneline_config.config
+print(tuple(config["color"]["option"][config["color"]["conn"]]))
+# json import
+with open('oneline_config.json') as conf:
+    config = json.load(conf)
+print(tuple(config["color"]["option"][config["color"]["conn"]]))
 
 # Loop until the user clicks the close button.
 done = False

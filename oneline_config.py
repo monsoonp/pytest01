@@ -1,4 +1,4 @@
-{
+config = {
   "color": {
     "conn": "RED",
     "disConn": "BLUE",
@@ -13,16 +13,16 @@
       "BLUE": [0, 0, 255],
       "YELLOW": [255, 255, 0]
     },
-    "station": ["RED","BLUE","YELLOW", "GREEN"]
+    "station": ["RED", "BLUE", "YELLOW", "GREEN"]
   },
   "text": {
     "font": "malgungothic",
     "size": 15,
-    "bold": true,
-    "italic": false
+    "bold": True,
+    "italic": False
   },
   "screen": {
-    "size": 0,
+    "size": 0, 
     "fps": 0.2
   },
   "size": {
@@ -30,4 +30,10 @@
     "ellipse": 20
   }
 
+}
+
+station = {
+  "station_1": {
+
+  }
 }
