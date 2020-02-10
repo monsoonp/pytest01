@@ -1,4 +1,5 @@
 # diagramTest.py
+# _*_coding: utf-8 _*_
 import pygame
 import math
 import csv
