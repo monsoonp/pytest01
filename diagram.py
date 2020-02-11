@@ -110,7 +110,7 @@ def ds_draw(scr, data):
     dl = re.compile("4\\d4[12]")  # 4_41-2
     tie2 = re.compile("4\\d0[012]")  # 4_41-2
     name = data["name"].split(" ")[0]
-    kind = data["name"].split(" ")[1]
+    # kind = data["name"].split(" ")[1]
 
     if "-" not in name:
         x = 0
