@@ -1,31 +1,21 @@
-# diagram.py
+# oneline.py
 import pygame
-import math
-import random
-import csv
 import re
 import sys
 import json
+import subprocess
 
-import oneline_config
-
-# import testClass
-# from test.testClass import Address
 pygame.init()
 
-# functions
-ALPHA = (130, 130, 130, 0.5)
-BLACK = (0,   0,   0)
+# Color
 WHITE = (255, 255, 255)
-# GREEN = (0, 255,   0)
+GREY = (200, 200, 200, 0.5)
+BLACK = (0,   0,   0)
 GREEN = (55, 200,   55)
 RED = (255,   0,   0)
 BLUE = (0,   0, 255)
-# A - 65, a - 97
+# ascii / A - 65, a - 97
 
-db_list = []
-station_number = ""
-file_name = "data/station_test{0}.csv". format(station_number)
 # PI = math.pi
 # 화면 사이즈, 튜플 형식
 # size = (1800, 1000)
@@ -34,19 +24,27 @@ file_name = "data/station_test{0}.csv". format(station_number)
 
 video_infos = pygame.display.Info()  # pygame, 화면정보
 width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, 높이
-# 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만)
+# 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만 적용)
 screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
+# with open('oneline_config.json') as conf:
+#     config = json.load(conf)
 
+# data
 title = ""
-# 화면 제목
-pygame.display.set_caption("{0} 단선도".format(title))
+db_list = []    # CB, DS 목록
+# Loop until the user clicks the close button.
+done = False
+menu = True
+station_number = 0
+# Used to manage how fast the screen updates
+clock = pygame.time.Clock()
 
 
 def drawer(scr, line, data, x, y):
     name = data["name"].split(" ")[0]
     kind = data["name"].split(" ")[1]
     connection = int(data["conn"])
-    conn = RED if connection else ALPHA
+    conn = RED if connection else GREY
 
     if line == "tl":
         pygame.draw.line(scr, conn, [x + 15, y], [x + 15, y + 165], 2)
@@ -62,7 +60,7 @@ def drawer(scr, line, data, x, y):
             pygame.draw.ellipse(scr, RED, [x - 8, y + 60, 46, 46], 2)
             pygame.draw.ellipse(scr, RED, [x - 8, y + 84, 46, 46], 2)
             # font = pygame.font.SysFont('malgungothic', 25, False, False)
-            # text = font.render("{0}".format(name), True, ALPHA)
+            # text = font.render("{0}".format(name), True, GREY)
             # screen.blit(text, [x + 15, y + 77])
         else:
             pygame.draw.line(scr, conn, [x + 15, y], [x + 15, y + 155], 2)
@@ -110,7 +108,7 @@ def ds_draw(scr, data):
     dl = re.compile("4\\d4[12]")  # 4_41-2
     tie2 = re.compile("4\\d0[012]")  # 4_41-2
     name = data["name"].split(" ")[0]
-    # kind = data["name"].split(" ")[1]
+    kind = data["name"].split(" ")[1]
 
     if "-" not in name:
         x = 0
@@ -161,21 +159,12 @@ def ds_draw(scr, data):
         drawer(scr, "sec", data, x_sec, y_sec)
 
 
-# py파일 import
-station_2 = oneline_config.Station_2()
-print(station_2.direction)
-config = oneline_config
-# print(tuple(config["color"]["option"][config["color"]["conn"]]))
-# json import
-with open('oneline_config.json') as conf:
-    config = json.load(conf)
+"""
+pos = pygame.mouse.get_pos()    # mouse location
+x_position = pos[0]
+y_position = pos[1]
+"""
 
-# Loop until the user clicks the close button.
-done = False
-menu = True
-station = 0
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
 # -------- Main Program Loop -----------
 while not done:
     # --- Main event loop
@@ -195,36 +184,41 @@ while not done:
             elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7]:
                 station_number = event.key - 48  # 0 = 48
                 menu = False
+
+    # 메뉴
     if menu:
         pygame.display.set_caption("MENU")
+        screen.fill(BLACK)
+        font = pygame.font.SysFont('malgungothic', 35, True, False)
+        text = font.render("=========== 메뉴 ===========", True, WHITE)
+        screen.blit(text, [100, 50])
+        text = font.render("변전소 번호를 입력하세요. (1~7)", True, WHITE)
+        screen.blit(text, [100, 150])
+        text = font.render("메뉴로 돌아가기 (M), 종료 (ESC)", True, WHITE)
+        screen.blit(text, [100, 250])
 
-        screen.fill(BLACK)  # Clear the screen and set the screen background]
-        pygame.draw.rect(screen, (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)), [50, 50, 150, 150], 0)
-        font = pygame.font.SysFont('malgungothic', 25, True, False)
-        text = font.render("=========== MENU ===========", True, WHITE)
-        screen.blit(text, [400, 400])
-        text = font.render("Press Station Number (1~7)", True, WHITE)
-        screen.blit(text, [400, 600])
-        text = font.render("Back to MENU (M)", True, WHITE)
-        screen.blit(text, [400, 800])
+        clock.tick(1)
 
-        #  clock.tick(1)
+    # 단선도
     else:
-        file_name = "data/station_test{0}.csv".format(station_number)
-        db_list = []
-        with open(file_name, encoding="utf-8") as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=",", quotechar='|')
-            for row in csv_reader:
-                if not row or row[0].startswith(("#", "=")):
+        # station_info = subprocess.getoutput("./shmon {0} -n".format(station_number))
+        # station_info = subprocess.Popen(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE, encoding="utf8")  # split doesn't exist
+        station_info = subprocess.run(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
+        screen.fill(BLACK)
+        for row in station_info:
+            row = row.strip()
+            if row != "":
+                if row.startswith(("#", "=")):
                     continue
-                elif row[0].startswith("SS"):
-                    title = row[0]
+                elif row.startswith("SS"):
+                    title = row
                 else:
-                    db_list.append({"name": row[0], "conn": row[1].strip()})
+                    value = row.split(",")
+                    db_list.append({"name": value[0], "conn": value[1].strip()})
 
+        # 화면 제목
         pygame.display.set_caption("{0} 단선도".format(title))
-        # above this, or they will be erased with this command.
-        screen.fill(BLACK)  # Clear the screen and set the screen background]
+        # First, clear the screen to white. Don't put other drawing commands
 
         pygame.draw.line(screen, WHITE, [0, 210], [width, 210], 3)
         pygame.draw.line(screen, WHITE, [0, 360], [width, 360], 3)
@@ -234,13 +228,11 @@ while not done:
 
         for i in db_list:
             ds_draw(screen, i)
-        pygame.draw.rect(screen, (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)),[50, 50, 15, 15], 0)
-        #  clock.tick(0.2)
-    # --- Go ahead and update the screen with what we've drawn.
+
+        clock.tick(0.2)
+
     # pygame.display.flip()
     pygame.display.update()
-    # --- Limit to 10 frames per second
-    clock.tick(10)
 
 #  close the window and quit.
 pygame.quit()
