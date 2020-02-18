@@ -1,20 +1,30 @@
-# oneline.py
+# oneline_v2.py
 import pygame
 import re
 import sys
 import json
 import subprocess
 
+import oneline_config
+
+# import testClass
+# from test.testClass import Address
 pygame.init()
 
-# Color
-WHITE = (255, 255, 255)
-GREY = (200, 200, 200, 0.5)
+# functions
+ALPHA = (130, 130, 130, 0.5)
 BLACK = (0,   0,   0)
+GREY = (200, 200, 200, 0.5)
+WHITE = (255, 255, 255)
+# GREEN = (0, 255,   0)
 GREEN = (55, 200,   55)
 RED = (255,   0,   0)
 BLUE = (0,   0, 255)
-# ascii / A - 65, a - 97
+# A - 65, a - 97
+
+db_dict = dict()
+
+station_number = 1
 
 # PI = math.pi
 # 화면 사이즈, 튜플 형식
@@ -24,187 +34,156 @@ BLUE = (0,   0, 255)
 
 video_infos = pygame.display.Info()  # pygame, 화면정보
 width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, 높이
-# 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만 적용)
+# 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만)
 screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
-# with open('oneline_config.json') as conf:
-#     config = json.load(conf)
 
-# data
 title = ""
-db_list = []    # CB, DS 목록
+# 화면 제목
+pygame.display.set_caption("{0} 단선도".format(title))
+config = oneline_config.config
+station = oneline_config.station[1]
+
+
+def set_x(position):
+    return int(width * position / 2000)
+
+
+def set_y(position):
+    return int(height * position / 2000)
+
+
+def connection(val):
+    return RED if val else GREEN
+
+
+def drawer(kind, scr, color, location, write, point):
+    if "DS" in kind:
+        pygame.draw.ellipse(scr, color, location, 0)
+    elif "CB" in kind:
+        pygame.draw.rect(scr, color, location, 0)
+    letter = config["text"]["font"]
+    size = config["text"]["size"]
+    bold = config["text"]["bold"]
+    italic = config["text"]["italic"]
+    font = pygame.font.SysFont(letter, size, bold, italic)
+    text = font.render("{0}".format(point), True, WHITE)
+    if not write:
+        scr.blit(text, [location[0]-40, location[1]])
+    elif write == "up":
+        scr.blit(text, [location[0], location[1]-40])
+
+
+def shape(scr, point, val):
+    tl = re.compile("^6\\d7$")  # 6_7
+    tr = re.compile("^6\\d31$")  # 61_1-3
+    tie = re.compile("^6\\d02$")  # 61_0-2
+    tr2 = re.compile("^4\\d44$")  # 4_41-2
+
+    dl = re.compile("4\\d4[12]")  # 4_41-2
+    tie2 = re.compile("4\\d0[012]")  # 4_41-2
+
+    try:
+        if point in station.keys():
+            x = station[point][0]
+            text = station[point][1]
+            size = config["size"]
+
+            if tl.match(point):
+                conn = connection(db_dict[point]["conn"])
+                drawer(val["kind"], scr, conn, [set_x(x), set_y(300), size, size], text, point)
+                point = point[:-1]+"1"
+                conn = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, conn, [set_x(x-40), set_y(450), size, size], text, point)
+                point = point[:-1]+"2"
+                conn = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, conn, [set_x(x-40), set_y(600), size, size], text, point)
+
+            elif tr.match(point):
+                if isinstance(x, int):
+                    conn = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, conn, [set_x(x), set_y(450), size, size], text, point)
+                    point = point[:-1]+"2"
+                    conn = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x), set_y(600), size, size], text, point)
+                    point = point[:-1]+"3"
+                    conn = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x+40), set_y(750), size, size], text, point)
+            elif tie.match(point):
+                conn = connection(db_dict[point]["conn"])
+                drawer(val["kind"], scr, conn, [set_x(x), set_y(600), size, size], text, point)
+                point = point[:-1]+"0"
+                conn = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, conn, [set_x(x), set_y(525), size, size], text, point)
+                point = point[:-1]+"1"
+                conn = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, conn, [set_x(x), set_y(450), size, size], text, point)
+            elif tr2.match(point):
+                if isinstance(x, int):
+                    conn = connection(db_dict[point]["conn"])
+                else:
+                    conn = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, conn, [set_x(x[0]+40), set_y(1300), size, size], text, point)
+
+                    point = point[:-1] + "1"
+                    conn = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x[1]-40), set_y(1450), size, size], "up", point)
+
+                    point = point[:-1] + "2"
+                    conn = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x[1]-40), set_y(1600), size, size], 'null', point)
+
+    except KeyError:
+        print(f"key does not exist: {point}")
+    except IOError:
+        print("IO Exception")
+
+
 # Loop until the user clicks the close button.
 done = False
 menu = True
-station_number = 0
+
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
-
-
-def drawer(scr, line, data, x, y):
-    name = data["name"].split(" ")[0]
-    kind = data["name"].split(" ")[1]
-    connection = int(data["conn"])
-    conn = RED if connection else GREY
-
-    if line == "tl":
-        pygame.draw.line(scr, conn, [x + 15, y], [x + 15, y + 165], 2)
-        pygame.draw.line(scr, conn, [x + 15, y + 165], [x - 30, y + 165], 2)
-    elif line == "tl2":  # top / bot
-        if int(name) % 2 == 1:
-            pygame.draw.line(scr, conn, [x + 15, y - 30], [x + 15, y + 45], 2)
-        else:
-            pygame.draw.line(scr, conn, [x + 15, y - 15], [x + 15, y + 60], 2)
-    elif line == "tr2" or line == "tr3":
-        pygame.draw.line(screen, conn, [x + 15, y - 30], [x + 15, y + 60], 2)
-        if line == "tr2":
-            pygame.draw.ellipse(scr, RED, [x - 8, y + 60, 46, 46], 2)
-            pygame.draw.ellipse(scr, RED, [x - 8, y + 84, 46, 46], 2)
-            # font = pygame.font.SysFont('malgungothic', 25, False, False)
-            # text = font.render("{0}".format(name), True, GREY)
-            # screen.blit(text, [x + 15, y + 77])
-        else:
-            pygame.draw.line(scr, conn, [x + 15, y], [x + 15, y + 155], 2)
-            pygame.draw.line(scr, conn, [x + 15, y + 155], [x - 30, y + 155], 2)
-    elif line == "tr":
-        pygame.draw.line(screen, conn, [x + 15, y - 30], [x + 15, y + 60], 2)
-    elif line == "dl":
-        if int(name) % 2 == 1:
-            pygame.draw.line(scr, conn, [x + 15, y - 45], [x + 15, y + 45], 2)
-        else:
-            pygame.draw.line(scr, conn, [x + 15, y - 15], [x + 15, y + 75], 2)
-    elif line == "tie" or line == "tie2":
-        pygame.draw.line(scr, conn, [x + 15, y - 15], [x + 15, y + 45], 2)
-    '''    
-    elif line == "sec":
-        if data[2][6] == "0":
-            pygame.draw.line(scr, conn, [x + 15, y-135], [x + 15, y], 2)
-            pygame.draw.line(scr, conn, [x + 15, y-135], [x - 25, y-135], 2)
-        else:
-            if int(data[2][6]) % 2 == 1:
-                pygame.draw.line(scr, conn, [x+15, y-45], [x+15, y+45], 2)
-            else:
-                pygame.draw.line(scr, conn, [x+15, y-15], [x+15, y+75], 2)
-    '''
-    conn = RED if connection == 1 else GREEN
-    if "DS" in kind:
-        pygame.draw.ellipse(scr, conn, [x, y, 30, 30], 0)
-    elif "CB" in kind:
-        pygame.draw.rect(scr, conn, [x, y, 30, 30], 0)
-
-    font = pygame.font.SysFont('malgungothic', 15, True, False)
-    text = font.render("{0}".format(name), True, WHITE)
-    screen.blit(text, [x, y - 25])
-
-
-def ds_draw(scr, data):
-    # data / ex). ['1', '팔봉두마#1T/L617CB', '617', '[1]']
-
-    tl = re.compile("6\\d[67]")  # 6_6-7
-    tl2 = re.compile("6\\d[12]")  # 6_1-72
-    tr = re.compile("6\\d3[12]")  # 61_1-2
-    tr2 = re.compile("6\\d33")  # 6_31-2
-    tr3 = re.compile("4\\d44")  # 4_41-2
-    tie = re.compile("6\\d0[012]")  # 61_1-2
-    dl = re.compile("4\\d4[12]")  # 4_41-2
-    tie2 = re.compile("4\\d0[012]")  # 4_41-2
-    name = data["name"].split(" ")[0]
-    kind = data["name"].split(" ")[1]
-
-    if "-" not in name:
-        x = 0
-        y = 0
-        if name.isdigit():
-            if len(name) == 3:
-                x = int(name[1])
-                y = int(name[2])
-            elif len(name) == 4:
-                x = int(name[1])
-                y = int(name[3])
-
-        if tl.match(name):  # 송전
-            drawer(scr, "tl", data, x * 210 - 50, (y - 5) * 60)
-        elif tl2.match(name):  # 송전 - 1차
-            drawer(scr, "tl2", data, x * 210 - 100, (y + 3) * 60)
-        elif tr.match(name):  # 1차 - MTR
-            drawer(scr, "tr", data, x * 550 - 250, (y + 3) * 60)
-        elif tr2.match(name):  # 1차 - MTR
-            drawer(scr, "tr2", data, x * 550 - 200, (y + 3) * 60 + 30)
-        elif tr3.match(name):  # MTR - 2차
-            drawer(scr, "tr3", data, x * 550 - 200, (y + 5) * 60 + 10)
-        elif tie.match(name):  # bus-tie
-            if y == 0:
-                y = 2
-            elif y == 2:
-                y = 3
-            drawer(scr, "tie", data, x * 550 - 100, (y + 3) * 60 - 30)
-        elif dl.match(name):  # MTR - 2차
-            drawer(scr, "dl", data, x * 550 - 250, (y + 10) * 60)
-        elif tie2.match(name):  # 2차 bus-tie
-            if y == 0:
-                y = 2
-            elif y == 2:
-                y = 3
-            drawer(scr, "tie2", data, x * 550 - 100, (y + 10) * 60 - 30)
-
-    else:  # (2차) bus section / 40-41-0, 40-41-1, 41-42-0 / 1차 60-61-0, 65-66-0
-        y = int(name[1])
-        x = 2 if int(name[6]) == 0 else 1 if int(name[6]) == 1 else 3
-
-        first_y = 610 if int(name[0]) == 4 else 210
-        second_y = 800 if int(name[0]) == 4 else 360
-
-        x_sec = (y - 4) * 550 + x * 60 if y >= 5 else (y + 1) * 550 + x * 60
-        y_sec = second_y - 15 if y >= 5 else first_y - 15  # y - 610, 800 / 210, 360
-
-        drawer(scr, "sec", data, x_sec, y_sec)
-
-
-"""
-pos = pygame.mouse.get_pos()    # mouse location
-x_position = pos[0]
-y_position = pos[1]
-"""
-
 # -------- Main Program Loop -----------
 while not done:
+    # station = oneline_config.station_info[station_number].point
+    station = oneline_config.station[1]
+    direction = config["direction"][station_number - 1]
+
     # --- Main event loop
     for event in pygame.event.get():  # User did something
         if event.type == pygame.QUIT:  # If user clicked close
             print("Quit.")
             done = True  # Flag that we are done so we exit this loop
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+            if event.key == pygame.K_ESCAPE:    # Esc to escape
                 print("Quit.")
                 done = True
-            elif event.key == pygame.K_r:
-                print("reset")
             elif event.key == pygame.K_m:
                 print("menu")
                 menu = True
             elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7]:
                 station_number = event.key - 48  # 0 = 48
                 menu = False
-
-    # 메뉴
     if menu:
         pygame.display.set_caption("MENU")
-        screen.fill(BLACK)
+
+        screen.fill(BLACK)  # Clear the screen and set the screen background]
         font = pygame.font.SysFont('malgungothic', 35, True, False)
-        text = font.render("=========== 메뉴 ===========", True, WHITE)
-        screen.blit(text, [100, 50])
-        text = font.render("변전소 번호를 입력하세요. (1~7)", True, WHITE)
-        screen.blit(text, [100, 150])
-        text = font.render("메뉴로 돌아가기 (M), 종료 (ESC)", True, WHITE)
-        screen.blit(text, [100, 250])
+        text = font.render("=========== MENU ===========", True, (255, 100, 50))
+        screen.blit(text, [400, 200])
+        text = font.render("Press Station Number (1 ~ 7)", True, WHITE)
+        screen.blit(text, [400, 350])
+        text = font.render("Back to MENU (M)", True, WHITE)
+        screen.blit(text, [400, 500])
+        text = font.render("Close (ESC)", True, WHITE)
+        screen.blit(text, [400, 650])
 
-        clock.tick(1)
-
-    # 단선도
     else:
-        # station_info = subprocess.getoutput("./shmon {0} -n".format(station_number))
-        # station_info = subprocess.Popen(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE, encoding="utf8")  # split doesn't exist
+
+        db_dict = dict()
         station_info = subprocess.run(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
-        screen.fill(BLACK)
+
         for row in station_info:
             row = row.strip()
             if row != "":
@@ -214,27 +193,22 @@ while not done:
                     title = row
                 else:
                     value = row.split(",")
-                    db_list.append({"name": value[0], "conn": value[1].strip()})
+                    name = value[0].split(" ")[0]
+                    kind = value[0].split(" ")[1]
+                    conn = value[1].strip()
+                    db_dict[name] = {"kind": str(kind), "conn": int(conn)}
 
-        # 화면 제목
         pygame.display.set_caption("{0} 단선도".format(title))
-        # First, clear the screen to white. Don't put other drawing commands
+        # above this, or they will be erased with this command.
+        screen.fill(BLACK)  # Clear the screen and set the screen background]
 
-        pygame.draw.line(screen, WHITE, [0, 210], [width, 210], 3)
-        pygame.draw.line(screen, WHITE, [0, 360], [width, 360], 3)
-
-        pygame.draw.line(screen, WHITE, [0, 610], [width, 610], 3)
-        pygame.draw.line(screen, WHITE, [0, 800], [width, 800], 3)
-
-        for i in db_list:
-            ds_draw(screen, i)
-
-        clock.tick(0.2)
+        for k, v in db_dict.items():
+            shape(screen, k, v)
 
     # pygame.display.flip()
     pygame.display.update()
+    clock.tick(config["screen"]["fps"])
 
 #  close the window and quit.
 pygame.quit()
-
 
