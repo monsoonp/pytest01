@@ -23,7 +23,6 @@ RED = (255,   0,   0)
 BLUE = (0,   0, 255)
 # A - 65, a - 97
 
-db_list = []
 db_dict = dict()
 station_number = 1
 file_name = "data/station_test{0}.csv". format(station_number)
@@ -43,14 +42,18 @@ title = ""
 pygame.display.set_caption("{0} 단선도".format(title))
 config = oneline_config.config
 station = oneline_config.station[1]
+x_position = 2400
+y_position = 2000
 
 
 def set_x(position):
-    return int(width * position / 2000)
+    global x_position
+    return int(width * position / x_position)
 
 
 def set_y(position):
-    return int(height * position / 2000)
+    global y_position
+    return int(height * position / y_position)
 
 
 def connection(val):
@@ -71,71 +74,104 @@ def drawer(kind, scr, color, location, write, point):
     if not write:
         scr.blit(text, [location[0]-40, location[1]])
     elif write == "up":
-        scr.blit(text, [location[0], location[1]-40])
+        scr.blit(text, [location[0], location[1]-50])
+    elif write == "down":
+        scr.blit(text, [location[0], location[1]+20])
+
 
 def shape(scr, point, val):
     tl = re.compile("^6\\d7$")  # 6_7
-    tr = re.compile("^6\\d31$")  # 61_1-3
-    tie = re.compile("^6\\d02$")  # 61_0-2
-    tr2 = re.compile("^4\\d44$")  # 4_41-2
+    tr = re.compile("^6\\d33$")  # 61_1-3
+    tie = re.compile("(^6\\d02$|^4\\d02$)")  # 6_02 // 4_02
 
-    dl = re.compile("4\\d4[12]")  # 4_41-2
-    tie2 = re.compile("4\\d0[012]")  # 4_41-2
+    dl = re.compile("^4\\d44$")  # 4_4[124
+    bank = re.compile("^4(.[7]$|\\d[78][9]$)")  # 4_[127] / 4_[78][129]
+
+    section = re.compile("(^6\\d-6\\d-[2]$|^4\\d-4\\d-[2]$)")   # [46]_-[46]_-[012]
 
     try:
         if point in station.keys():
             x = station[point][0]
             text = station[point][1]
             size = config["size"]
-
             if tl.match(point):
-                conn = connection(db_dict[point]["conn"])
-                drawer(val["kind"], scr, conn, [set_x(x), set_y(300), size, size], text, point)
+                color = connection(db_dict[point]["conn"])
+                drawer(val["kind"], scr, color, [set_x(x), set_y(300), size, size], text, point)
                 point = point.replace(point[2], str(1))
-                conn = connection(db_dict[point]["conn"])
-                drawer(db_dict[point]["kind"], scr, conn, [set_x(x-40), set_y(450), size, size], text, point)
+                color = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, color, [set_x(x-40), set_y(450), size, size], text, point)
                 point = point.replace(point[2], str(2))
-                conn = connection(db_dict[point]["conn"])
-                drawer(db_dict[point]["kind"], scr, conn, [set_x(x-40), set_y(600), size, size], text, point)
-
+                color = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, color, [set_x(x-40), set_y(600), size, size], text, point)
             elif tr.match(point):
                 if isinstance(x, int):
-                    conn = connection(db_dict[point]["conn"])
-                    drawer(val["kind"], scr, conn, [set_x(x), set_y(450), size, size], text, point)
+                    color = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, color, [set_x(x+40), set_y(750), size, size], text, point)
+                    point = point[:-1]+"1"
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(450), size, size], text, point)
                     point = point[:-1]+"2"
-                    conn = connection(db_dict[point]["conn"])
-                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x), set_y(600), size, size], text, point)
-                    point = point[:-1]+"3"
-                    conn = connection(db_dict[point]["conn"])
-                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x+40), set_y(750), size, size], text, point)
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(600), size, size], text, point)
             elif tie.match(point):
-                conn = connection(db_dict[point]["conn"])
-                drawer(val["kind"], scr, conn, [set_x(x), set_y(600), size, size], text, point)
-                point = point[:-1]+"0"
-                conn = connection(db_dict[point]["conn"])
-                drawer(db_dict[point]["kind"], scr, conn, [set_x(x), set_y(525), size, size], text, point)
-                point = point[:-1]+"1"
-                conn = connection(db_dict[point]["conn"])
-                drawer(db_dict[point]["kind"], scr, conn, [set_x(x), set_y(450), size, size], text, point)
-            elif tr2.match(point):
-                if isinstance(x, int):
-                    conn = connection(db_dict[point]["conn"])
-                else:
-                    conn = connection(db_dict[point]["conn"])
-                    drawer(val["kind"], scr, conn, [set_x(x[0]+40), set_y(1300), size, size], text, point)
-
+                if point[0] == "6":
+                    color = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, color, [set_x(x), set_y(600), size, size], text, point)
+                    point = point[:-1]+"0"
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(525), size, size], text, point)
+                    point = point[:-1]+"1"
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(450), size, size], text, point)
+                elif point[0] == "4":
+                    color = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, color, [set_x(x), set_y(1400), size, size], text, point)
+                    point = point[:-1] + "0"
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(1325), size, size], station[point][1], point)
                     point = point[:-1] + "1"
-                    conn = connection(db_dict[point]["conn"])
-                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x[1]-40), set_y(1450), size, size], "up", point)
-
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(1250), size, size], station[point][1], point[:-1])
+            elif dl.match(point):
+                if isinstance(x, int):
+                    print("add something")
+                else:
+                    color = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, color, [set_x(x[0]+40), set_y(1000), size, size], text, point)
+                    point = point[:-1] + "1"
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x[1]), set_y(1250), size, size], "up", point[:-1])
                     point = point[:-1] + "2"
-                    conn = connection(db_dict[point]["conn"])
-                    drawer(db_dict[point]["kind"], scr, conn, [set_x(x[1]-40), set_y(1600), size, size], 'null', point)
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x[1]), set_y(1400), size, size], 'null', point)
+            elif bank.match(point):
+                color = connection(db_dict[point]["conn"])
+                drawer(val["kind"], scr, color, [set_x(x+20), set_y(1550), size, size], text, point)
+                point = point[:-1] + "1"
+                color = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(1250), size, size], station[point][1], point[:-1])
+                point = point[:-1] + "2"
+                color = connection(db_dict[point]["conn"])
+                drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(1400), size, size], station[point][1], point)
+            elif section.match(point):
+                if point[0] == "4":
+                    y = 1250 - 60 if int(point[1]) < 5 else 1400 + 60
+                    color = connection(db_dict[point]["conn"])
+                    drawer(val["kind"], scr, color, [set_x(x), set_y(y), size, size], text, point[-2:])
+                    point = point[:-1] + "0"
+                    x = station[point][0]
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(y), size, size], station[point][1], point[:-2])
+                    point = point[:-1] + "1"
+                    x = station[point][0]
+                    color = connection(db_dict[point]["conn"])
+                    drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(y), size, size], station[point][1], point[-2:])
 
     except KeyError:
         print(f"key does not exist: {point}")
     except IOError:
         print("io error")
+
 
 # Loop until the user clicks the close button.
 done = False
@@ -159,11 +195,17 @@ while not done:
                 print("Quit.")
                 done = True
             elif event.key == pygame.K_m:
-                print("menu")
                 menu = True
+                x_position = 2400
+                y_position = 2000
             elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7]:
                 station_number = event.key - 48  # 0 = 48
                 menu = False
+            elif event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                x_position = x_position - 100 if event.key == 275 else x_position + 100
+            elif event.key in [pygame.K_UP, pygame.K_DOWN]:
+                y_position = y_position - 100 if event.key == 274 else y_position + 100
+
     if menu:
         pygame.display.set_caption("MENU")
 
@@ -180,7 +222,6 @@ while not done:
 
     else:
         file_name = "data/station_test{0}.csv".format(station_number)
-        db_list = []
         db_dict = dict()
 
         with open(file_name, encoding="utf-8") as csv_file:
@@ -194,7 +235,7 @@ while not done:
                     name = row[0].split(" ")[0]
                     kind = row[0].split(" ")[1]
                     conn = row[1].strip()
-                    #db_list.append({f"{name}": kind, "conn": conn})
+
                     db_dict[name] = {"kind": str(kind), "conn": int(conn)}
 
         pygame.display.set_caption("{0} 단선도".format(title))
