@@ -1,12 +1,18 @@
 # oneline_config.py
 import pygame
+import re
+
 BLACK = (0,   0,   0)
 GREY = (200, 200, 200, 0.5)
 WHITE = (255, 255, 255)
 RED = (255,   0,   0)
-GREEN = (55, 200,   55)
+GREEN = (100, 200,   100)
 BLUE = (0,   0, 255)
 YELLOW = (255, 255, 0)
+
+pygame.font.init()
+fonts = pygame.font.get_fonts()
+font = [f for f in fonts if re.match(".+gothic$", f)][0]
 
 config = {
     "color": {
@@ -26,7 +32,7 @@ config = {
         "station": ["RED", "BLUE", "YELLOW", "GREEN"]
     },
     "text": {
-        "font": "malgungothic",
+        "font": font,  # nanumgothic, "malgungothic"
         "size": 13,
         "bold": True,
         "italic": False
@@ -35,14 +41,18 @@ config = {
         "size": 0,
         "fps": 2
     },
-    "size": 20,
-    "direction": [True, False, True, False, True, True, True]  # 1 - 7 변전소 방향
+    "size": 20
+    # "direction": [True, False, True, False, True, True, True]  # 1 - 7 변전소 방향
 
 }
 
 station = {  # default 변전소 설정값
     1: {
-        "color": [RED, BLUE, YELLOW, GREEN],
+        "color": [RED, BLUE, YELLOW, GREEN, GREY],
+        "direction": True,
+        "line": {"1차": [], "2차": ["start", "40-41-0", "41-42-0", "42-43-0", "end"]},
+        "start": [0, None],
+        "end": [10000, None],
         "617": [100, None],
         "6133": [180, None],
 
@@ -253,7 +263,124 @@ station = {  # default 변전소 설정값
         "4마2": [2120, "null"]
     },
     4: {
+        "color": [RED, BLUE, YELLOW],
+        "direction": False,
+        "line": {"1차": [], "2차": ["start", "40-41-0", "41-42-0", "end"]},
+        "start": [0, None],
+        "end": [10000, None],
 
+        "617": [2100, None],
+        "6133": [1900, None],
+
+        "627": [1650, None],
+
+        "6233": [1100, None],
+
+        "6102": [850, None],    # 1 bus_tie
+
+        "657": [700, None],
+
+        "6333": [400, None],
+
+        "687": [300, None],
+
+        # 1 bank
+        "447": [2120, 'down'],
+        "441": [2100, 'up'],
+        "442": [2100, 'null'],
+
+        "457": [2080, 'down'],
+        "451": [2060, 'up'],
+        "452": [2060, 'null'],
+
+        "4144": [[1900, 2020], None],
+
+        "467": [1960, 'down'],
+        "461": [1940, 'up'],
+        "462": [1940, 'null'],
+
+        "477": [1920, 'down'],
+        "471": [1900, 'up'],
+        "472": [1900, 'null'],
+
+        "4100": [1860, 'null'],
+        "4101": [1860, 'up'],
+        "4102": [1860, 'null'],
+
+        "487": [1780, 'down'],
+        "481": [1760, 'up'],
+        "482": [1760, 'null'],
+
+        "4189": [1710, 'down'],
+        "4181": [1690, 'up'],
+        "4182": [1690, 'null'],
+
+        "40-41-0": [1630, 'up'],
+        "40-41-1": [1670, 'null'],
+        "40-41-2": [1590, 'null'],
+        "45-46-0": [1630, 'down'],
+        "45-46-1": [1670, 'null'],
+        "45-46-2": [1590, 'null'],
+
+        "4289": [1520, 'down'],
+        "4281": [1500, 'up'],
+        "4282": [1500, 'null'],
+
+        "4B7": [1460, 'down'],
+        "4B1": [1440, 'up'],
+        "4B2": [1440, 'null'],
+
+        "4244": [[1100, 1400], None],
+
+        "4C7": [1320, 'down'],
+        "4C1": [1300, 'up'],
+        "4C2": [1300, 'null'],
+
+        "4F7": [1240, 'down'],
+        "4F1": [1220, 'up'],
+        "4F2": [1220, 'null'],
+
+        "4G7": [1160, 'down'],
+        "4G1": [1140, 'up'],
+        "4G2": [1140, 'null'],
+
+        "4H7": [1080, 'down'],
+        "4H1": [1060, 'up'],
+        "4H2": [1060, 'null'],
+
+        "41-42-0": [800, 'up'],
+        "41-42-1": [840, "null"],
+        "41-42-2": [760, "null"],
+        "46-47-0": [800, 'down'],
+        "46-47-1": [840, "null"],
+        "46-47-2": [760, "null"],
+
+        "4J7": [640, 'down'],
+        "4J1": [620, 'up'],
+        "4J2": [620, 'null'],
+
+        # 2 bus_tie
+        "4200": [520, 'null'],
+        "4201": [520, 'up'],
+        "4202": [520, 'null'],
+
+        "4344": [400, None],
+
+        "4K7": [320, 'down'],
+        "4K1": [300, 'up'],
+        "4K2": [300, 'null'],
+
+        "4L7": [245, 'down'],
+        "4L1": [225, 'up'],
+        "4L2": [225, 'null'],
+
+        "4M7": [170, 'down'],
+        "4M1": [150, 'up'],
+        "4M2": [150, 'null'],
+
+        "4N7": [95, 'down'],
+        "4N1": [75, 'up'],
+        "4N2": [75, 'null']
     }
 
 }

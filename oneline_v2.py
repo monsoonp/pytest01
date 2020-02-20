@@ -95,14 +95,20 @@ def shape(scr, point, val):
             text = station[point][1]
             size = config["size"]
             if tl.match(point):
+                lines = []
                 color = connection(db_dict[point]["conn"])
                 drawer(val["kind"], scr, color, [set_x(x), set_y(300), size, size], text, point)
-                point = point.replace(point[2], str(1))
+                lines.append({"x":point, "conn": db_dict[point]["conn"]})
+
+                point = point[:-1]+"1"
                 color = connection(db_dict[point]["conn"])
                 drawer(db_dict[point]["kind"], scr, color, [set_x(x-40), set_y(450), size, size], text, point)
-                point = point.replace(point[2], str(2))
+                lines.append({"x": point, "conn": db_dict[point]["conn"]})
+
+                point = point[:-1]+"2"
                 color = connection(db_dict[point]["conn"])
                 drawer(db_dict[point]["kind"], scr, color, [set_x(x-40), set_y(600), size, size], text, point)
+                lines.append({"x": point, "conn": db_dict[point]["conn"]})
             elif tr.match(point):
                 if isinstance(x, int):
                     color = connection(db_dict[point]["conn"])
@@ -181,7 +187,7 @@ menu = True
 clock = pygame.time.Clock()
 # -------- Main Program Loop -----------
 while not done:
-    station = oneline_config.station[station_number]
+    # station = oneline_config.station[station_number]
 
     # --- Main event loop
     for event in pygame.event.get():  # User did something

@@ -1,32 +1,29 @@
-# diagram_v2.py
+# oneline_v4.py
 import pygame
-import math
-import csv
 import re
 import sys
 import json
+import subprocess
 
 import oneline_config
 
-# import testClass
-# from test.testClass import Address
 pygame.init()
 
 # functions
 ALPHA = (130, 130, 130, 0.5)
-BLACK = (0,   0,   0)
+BLACK = (0, 0, 0)
 GREY = (200, 200, 200, 0.5)
 WHITE = (255, 255, 255)
 # GREEN = (0, 255,   0)
-GREEN = (55, 200,   55)
-RED = (255,   0,   0)
-BLUE = (0,   0, 255)
+GREEN = (55, 200, 55)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
 LIVE = (150, 150, 255)
 # A - 65, a - 97
 
 db_dict = dict()
 station_number = 1
-file_name = "data/station_test{0}.csv". format(station_number)
+file_name = "data/station_test{0}.csv".format(station_number)
 # PI = math.pi
 # 화면 사이즈, 튜플 형식
 # size = (1800, 1000)
@@ -149,14 +146,14 @@ def bus_liner(scr, point, x, *args):
         if db_dict[point]["conn"]:
             # 611 위에서 아래 우측
             pygame.draw.line(scr, LIVE, [set_x(x - 40) + 10, set_y(400 if point[-1] == "1" else 490)], [set_x(x - 40) + 10, set_y(600 if point[-1] == "1" else 700)], 3)
-            pygame.draw.line(scr, LIVE, [set_x(x - 40) + 10, set_y(540)], [set_x(x+(0 if not re.match("6\\d3[12]", point) else 20)) + 10, set_y(540)], 3)
+            pygame.draw.line(scr, LIVE, [set_x(x - 40) + 10, set_y(540)], [set_x(x) + 10, set_y(540)], 3)
         else:
             pygame.draw.line(scr, GREY, [set_x(x - 40) + 10, set_y(400 if point[-1] == "1" else 600)], [set_x(x - 40) + 10, set_y(480 if point[-1] == "1" else 700)], 3)
     elif point[0] == "4":
         if db_dict[point]["conn"]:
             # 411 위에서 아래 우측
             pygame.draw.line(scr, args[0], [set_x(x) + 10, set_y(1205) if point[-1] == "1" else set_y(1250)+20], [set_x(x) + 10, set_y(1400) if point[-1] == "1" else set_y(1475)], 3)
-            pygame.draw.line(scr, args[0], [set_x(x) + 10, set_y(1325)+10], [set_x(x+(20 if not re.match("4\\d4[12]", point) else 40)) + 10, set_y(1325)+10], 3)
+            pygame.draw.line(scr, args[0], [set_x(x) + 10, set_y(1325)+10], [set_x(x+20) + 10, set_y(1325)+10], 3)
         else:
             pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1205) if point[-1] == "1" else set_y(1475)-20], [set_x(x) + 10, set_y(1250) if point[-1] == "1" else set_y(1475)], 3)
 
@@ -306,7 +303,7 @@ def shape(scr, point, val):
 
                     if True not in checker:
                         pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1250) + 20], [set_x(x) + 10, set_y(1400)], 3)
-                        pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1325) + 10], [set_x(x + 40) + 10, set_y(1325) + 10], 3)
+                        pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1325) + 10], [set_x(x + 20) + 10, set_y(1325) + 10], 3)
                 else:
                     pygame.draw.line(scr, l_color, [set_x(x[0]+40)+10, set_y(1000)+20], [set_x(x[0]+40)+10, set_y(1100)], 3)
                     pygame.draw.line(scr, l_color, [set_x(x[0] + 40) + 10, set_y(1100)], [set_x(x[1] + 20) + 10, set_y(1100)], 3)
@@ -399,7 +396,6 @@ menu = True
 clock = pygame.time.Clock()
 # -------- Main Program Loop -----------
 while not done:
-    # station = oneline_config.station[station_number]
 
     # --- Main event loop
     for event in pygame.event.get():  # User did something
@@ -430,7 +426,7 @@ while not done:
         font = pygame.font.SysFont(config["text"]["font"], 35, True, False)
         text = font.render("=========== MENU ===========", True, (255, 100, 50))
         screen.blit(text, [400, 200])
-        text = font.render("Press Station Number (1 ~ 7)", True, WHITE)
+        text = font.render("Press Station Number (1, 4), ", True, WHITE)
         screen.blit(text, [400, 350])
         text = font.render("Back to MENU (M)", True, WHITE)
         screen.blit(text, [400, 500])
@@ -438,36 +434,35 @@ while not done:
         screen.blit(text, [400, 650])
 
     else:
-        file_name = "data/station_test{0}.csv".format(station_number)
+
         db_dict = dict()
+        station_info = subprocess.run(["./shmon", str(station_number), "-n"], stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
 
-        with open(file_name, encoding="utf-8") as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=",", quotechar='|')
-            for row in csv_reader:
-                if not row or row[0].startswith(("#", "=")):
+        for row in station_info:
+            row = row.strip()
+            if row != "":
+                if row.startswith(("#", "=")):
                     continue
-                elif row[0].startswith("SS"):
-                    title = row[0]
+                elif row.startswith("SS"):
+                    title = row
                 else:
-                    name = row[0].split(" ")[0]
-                    kind = row[0].split(" ")[1]
-                    conn = row[1].strip()
-
+                    value = row.split(",")
+                    name = value[0].split(" ")[0]
+                    kind = value[0].split(" ")[1]
+                    conn = value[1].strip()
                     db_dict[name] = {"kind": str(kind), "conn": int(conn)}
 
         pygame.display.set_caption("{0} 단선도".format(title))
         # above this, or they will be erased with this command.
-        screen.fill(BLACK)  # Clear the screen and set the screen background
+        screen.fill(BLACK)  # Clear the screen and set the screen background]
 
         liner(screen, db_dict, station["line"])
         for k, v in db_dict.items():
             shape(screen, k, v)
 
-    # pygame.display.flip()
     pygame.display.update()
     clock.tick(config["screen"]["fps"])
 
 #  close the window and quit.
 pygame.quit()
-
 
