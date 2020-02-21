@@ -14,7 +14,7 @@ RAN_COLOR = (lambda: [random.randint(0, 255), random.randint(0, 255), random.ran
 
 pygame.font.init()
 fonts = pygame.font.get_fonts()
-font = [f for f in fonts if re.match(".+gothic$|.?gothic.?", f)][0]
+font = [f for f in fonts if re.match(".+gothic$|.*gothic.*", f)][0]
 
 config = {
     "color": {
