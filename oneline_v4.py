@@ -11,19 +11,19 @@ pygame.init()
 
 # functions
 ALPHA = (130, 130, 130, 0.5)
-BLACK = (0, 0, 0)
+BLACK = (0,   0,   0)
 GREY = (200, 200, 200, 0.5)
 WHITE = (255, 255, 255)
 # GREEN = (0, 255,   0)
-GREEN = (55, 200, 55)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
+GREEN = (55, 200,   55)
+RED = (255,   0,   0)
+BLUE = (0,   0, 255)
 LIVE = (150, 150, 255)
 # A - 65, a - 97
 
 db_dict = dict()
 station_number = 1
-file_name = "data/station_test{0}.csv".format(station_number)
+file_name = "data/station_test{0}.csv". format(station_number)
 # PI = math.pi
 # 화면 사이즈, 튜플 형식
 # size = (1800, 1000)
@@ -80,27 +80,27 @@ def drawer(kind, scr, color, location, write, point):
 
 def liner(scr, dic, line_list):
     # 1차
-    l_color = station["color"]
+    l_color = station["color"] if station["direction"] else station["color"][::-1]
     lines = line_list["1차"]
     if not len(lines):
         pygame.draw.line(scr, LIVE, [0, set_y(400)], [width, set_y(400)], 5)
         pygame.draw.line(scr, LIVE, [0, set_y(700)], [width, set_y(700)], 5)
 
     # MTR
-    for i in enumerate([i for i in dic.keys() if re.match("6\\d33", i)]):
+    for i in enumerate([i for i in dic.keys() if re.match(r"6\d33", i)]):
         i = i[0]
-        color = l_color[i] if dic[f"6{i + 1}33"]["conn"] else GREY  # 6133 색상
+        color = station["color"][i] if dic[f"6{i + 1}33"]["conn"] else GREY  # 6133 색상
         if isinstance(station[f"6{i + 1}33"][0], int):  # 6133 정수타입 유무/ 정수시
             pygame.draw.line(scr, color, [set_x(station[f"6{i + 1}33"][0] - 60), set_y(820)], [set_x(station[f"6{i + 1}33"][0] + 160), set_y(820)], 3)
             pygame.draw.line(scr, color, [set_x(station[f"6{i + 1}33"][0]+40)+10, set_y(780)], [set_x(station[f"6{i + 1}33"][0]+40)+10, set_y(820)], 3)
         else:
             print("6133 타입 체크")
         # MTR 텍스트 표시
-        opt = pygame.font.SysFont('malgungothic', 35, True, False)
+        opt = pygame.font.SysFont(config["text"]["font"], 35, True, False)
         mtr = opt.render(f"# {i + 1} M.Tr", True, WHITE)
         screen.blit(mtr, [set_x(station[f"6{i + 1}33"][0] - 60), set_y(840)])
 
-        color = l_color[i] if dic[f"4{i + 1}44"]["conn"] else GREY  # 4144 색상
+        color = station["color"][i] if dic[f"4{i + 1}44"]["conn"] else GREY  # 4144 색상
         if isinstance(station[f"4{i + 1}44"][0], int):  # 4144 정수타입 유무/ 정수시
             pygame.draw.line(scr, color, [set_x(station[f"4{i + 1}44"][0] - 60), set_y(960)], [set_x(station[f"4{i + 1}44"][0] + 160), set_y(960)], 3)
             pygame.draw.line(scr, color, [set_x(station[f"4{i + 1}44"][0] + 40)+10, set_y(960)], [set_x(station[f"4{i + 1}44"][0] + 40)+10, set_y(1000)], 3)
@@ -108,12 +108,12 @@ def liner(scr, dic, line_list):
             pygame.draw.line(scr, color, [set_x(station[f"4{i + 1}44"][0][0] - 60), set_y(960)], [set_x(station[f"4{i + 1}44"][0][0] + 160), set_y(960)], 3)
             pygame.draw.line(scr, color, [set_x(station[f"4{i + 1}44"][0][0] + 40)+10, set_y(960)], [set_x(station[f"4{i + 1}44"][0][0] + 40)+10, set_y(1000)], 3)
     # 2차
-    lines = line_list["2차"]
+    lines = line_list["2차"]  # Mtr, 2차section에 따른 구분
     for i in range(0, len(lines)-1):
         try:
-            if dic[f"4{i+1}41"]["conn"]:
+            if dic[f"4{i+1}41"]["conn"]:    # 4_41 연결시
                 pygame.draw.line(scr, l_color[i], [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i+1]][0]), set_y(1205)], 5)
-                if i < len(lines) - 2:
+                if i < len(lines) - 2:  # 마지막 section 이전까지
                     if dic[f"4{i+5}-4{i+6}-0"]["conn"]:
                         pygame.draw.line(scr, l_color[i+1], [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
                     else:
@@ -123,20 +123,20 @@ def liner(scr, dic, line_list):
                         pygame.draw.line(scr, l_color[i+1], [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
                     else:
                         pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
-
-            elif dic[f"4{i+1}42"]["conn"]:
+            elif dic[f"4{i+1}42"]["conn"]:    # 4_42 연결시
                 pygame.draw.line(scr, l_color[i], [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
                 if i < len(lines) - 2:
                     if dic[f"4{i}-4{i + 1}-0"]["conn"]:
-                        pygame.draw.line(scr, l_color[i + 1], [set_x(station[lines[i]][0]), set_y(1205)],[set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
+                        pygame.draw.line(scr, l_color[i + 1], [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
                     else:
-                        pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1205)],[set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
+                        pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
                 else:
                     if dic[f"4{i-1}-4{i}-0"]["conn"]:
-                        pygame.draw.line(scr, l_color[i + 1], [set_x(station[lines[i]][0]), set_y(1205)],[set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
+                        pygame.draw.line(scr, l_color[i + 1], [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
                     else:
-                        pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1205)],[set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
+                        pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
         except KeyError:
+            print("2차 BusLine KeyError")
             pass
 
 
@@ -145,23 +145,23 @@ def bus_liner(scr, point, x, *args):
     if point[0] == "6":
         if db_dict[point]["conn"]:
             # 611 위에서 아래 우측
-            pygame.draw.line(scr, LIVE, [set_x(x - 40) + 10, set_y(400 if point[-1] == "1" else 490)], [set_x(x - 40) + 10, set_y(600 if point[-1] == "1" else 700)], 3)
+            pygame.draw.line(scr, LIVE, [set_x(x - 40) + 10, set_y(400) if point[-1] == "1" else set_y(450)+20], [set_x(x - 40) + 10, set_y(600 if point[-1] == "1" else 700)], 3)
             pygame.draw.line(scr, LIVE, [set_x(x - 40) + 10, set_y(540)], [set_x(x) + 10, set_y(540)], 3)
         else:
-            pygame.draw.line(scr, GREY, [set_x(x - 40) + 10, set_y(400 if point[-1] == "1" else 600)], [set_x(x - 40) + 10, set_y(480 if point[-1] == "1" else 700)], 3)
+            pygame.draw.line(scr, GREY, [set_x(x - 40) + 10, set_y(400 if point[-1] == "1" else 600)], [set_x(x - 40) + 10, set_y(450 if point[-1] == "1" else 700)], 3)
     elif point[0] == "4":
         if db_dict[point]["conn"]:
             # 411 위에서 아래 우측
             pygame.draw.line(scr, args[0], [set_x(x) + 10, set_y(1205) if point[-1] == "1" else set_y(1250)+20], [set_x(x) + 10, set_y(1400) if point[-1] == "1" else set_y(1475)], 3)
-            pygame.draw.line(scr, args[0], [set_x(x) + 10, set_y(1325)+10], [set_x(x+20) + 10, set_y(1325)+10], 3)
+            pygame.draw.line(scr, args[0], [set_x(x) + 10, set_y(1325)+10], [set_x(x+(20 if not re.match(r"4\d4[12]", point) else 40)) + 10, set_y(1325)+10], 3)
         else:
             pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1205) if point[-1] == "1" else set_y(1475)-20], [set_x(x) + 10, set_y(1250) if point[-1] == "1" else set_y(1475)], 3)
 
 
 def bus_color(point):
     color = ()
-    mtr = [i for i in station if re.match("6\\d33", i)]
-    section = [i for i in station if re.match("\\d\\d-\\d\\d-0", i) and int(i[1]) < 5]
+    mtr = [i for i in station if re.match(r"6\d33", i)]
+    section = [i for i in station if re.match(r"\d\d-\d\d-0", i) and int(i[1]) < 5]
 
     for val in enumerate(section):  # config 섹션
         if station[point][0] < station[val[1]][0] if station["direction"] else station[point][0] > station[val[1]][0]:
@@ -170,28 +170,18 @@ def bus_color(point):
         else:
             continue
     color = station["color"][-(len(mtr)-len(section))]  # mtr 수와 2차 섹션 차이에 따른 2차 bus 색상
-    """
-    else:
-        for val in enumerate(section):  # config 섹션
-            if station[point][0] > station[val[1]][0]:
-                color = station["color"][val[0]]
-                return color
-            else:
-                continue
-        color = station["color"][len(section)-len(mtr)]  # mtr 수와 2차 섹션 차이에 따른 2차 bus 색상
-    """
     return color
 
 
 def shape(scr, point, val):
     global check
-    tl = re.compile("^6\\d7$")  # 6_7
-    tr = re.compile("^6\\d33$")  # 61_1-3
-    tie = re.compile("(^6\\d02$|^4\\d02$)")  # 6_02 // 4_02
-    dl = re.compile("^4\\d44$")  # 4_4[124
-    bank = re.compile("^4(.[7]$|\\d[78][9]$)")  # 4_[127] / 4_[78][129]
+    tl = re.compile(r"^6\d7$")  # 6_7
+    tr = re.compile(r"^6\d33$")  # 61_1-3
+    tie = re.compile(r"(^6\d02$|^4\d02$)")  # 6_02 // 4_02
+    dl = re.compile(r"^4\d44$")  # 4_4[124
+    bank = re.compile(r"^4(.[7]$|\d[78][9]$)")  # 4_[127] / 4_[78][129]
 
-    section = re.compile("(^6\\d-6\\d-[2]$|^4\\d-4\\d-[2]$)")   # [46]_-[46]_-[012]
+    section = re.compile(r"(^6\d-6\d-[2]$|^4\d-4\d-[2]$)")   # [46]_-[46]_-[012]
     checker = []
     try:
         if point in station.keys():  # config key 값안에 존재하는 point
@@ -283,6 +273,8 @@ def shape(scr, point, val):
                     drawer(db_dict[point]["kind"], scr, color, [set_x(x), set_y(1250), size, size], station[point][1], point[:-1])
             elif dl.match(point):  # 4144
                 l_color = station["color"][int(point[1])-1]  # 선 색상
+                if not (db_dict[point[:-1]+"1"]["conn"] or db_dict[point[:-1]+"2"]["conn"]):
+                    l_color = GREY
                 # 4144 x값 정수 타입 유무
                 if isinstance(x, int):
                     color = connection(db_dict[point]["conn"])
@@ -303,7 +295,7 @@ def shape(scr, point, val):
 
                     if True not in checker:
                         pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1250) + 20], [set_x(x) + 10, set_y(1400)], 3)
-                        pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1325) + 10], [set_x(x + 20) + 10, set_y(1325) + 10], 3)
+                        pygame.draw.line(scr, GREY, [set_x(x) + 10, set_y(1325) + 10], [set_x(x + 40) + 10, set_y(1325) + 10], 3)
                 else:
                     pygame.draw.line(scr, l_color, [set_x(x[0]+40)+10, set_y(1000)+20], [set_x(x[0]+40)+10, set_y(1100)], 3)
                     pygame.draw.line(scr, l_color, [set_x(x[0] + 40) + 10, set_y(1100)], [set_x(x[1] + 20) + 10, set_y(1100)], 3)
@@ -410,7 +402,10 @@ while not done:
                 menu = True
                 x_position = 2400
                 y_position = 2000
-            elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7]:
+            elif event.key == pygame.K_r:
+                x_position = 2400
+                y_position = 2000
+            elif event.key in [pygame.K_1, pygame.K_4]:  # , pygame.K_2, pygame.K_3, pygame.K_5, pygame.K_6, pygame.K_7
                 station_number = event.key - 48  # 0 = 48
                 station = oneline_config.station[station_number]
                 menu = False
@@ -455,6 +450,10 @@ while not done:
         pygame.display.set_caption("{0} 단선도".format(title))
         # above this, or they will be erased with this command.
         screen.fill(BLACK)  # Clear the screen and set the screen background]
+
+        font = pygame.font.SysFont(config["text"]["font"], 25, True, False)
+        text = font.render(re.sub(r"SS : (\d)\(([가-힣]{2})\)", r"\2 (\1)", title), True, WHITE)
+        screen.blit(text, [0, 0])
 
         liner(screen, db_dict, station["line"])
         for k, v in db_dict.items():
