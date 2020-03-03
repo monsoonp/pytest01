@@ -26,8 +26,6 @@ video_infos = pygame.display.Info()  # pygame, 화면정보
 width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, 높이
 # 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만 적용)
 screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
-# with open('oneline_config.json') as conf:
-#     config = json.load(conf)
 
 # data
 title = ""
@@ -157,7 +155,6 @@ def ds_draw(scr, data):
         y_sec = second_y - 15 if y >= 5 else first_y - 15  # y - 610, 800 / 210, 360
 
         drawer(scr, "sec", data, x_sec, y_sec)
-
 
 """
 pos = pygame.mouse.get_pos()    # mouse location
