@@ -54,7 +54,7 @@ class Example(wx.Frame):
         cb3 = wx.CheckBox(panel, label='Non-Project classes')
         cb3.SetFont(font)
         hbox4.Add(cb3, flag=wx.LEFT, border=10)
-        vbox.Add(hbox4, flag=wx.LEFT, border=10)
+        vbox.Add(hbox4, flag=wx.LEzFT, border=10)
 
         vbox.Add((-1, 25))
 
