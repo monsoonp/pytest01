@@ -4,8 +4,5 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="Python 3.8 (pytest01)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="pytest02" />
-    <orderEntry type="module" module-name="pytest02" />
-    <orderEntry type="module" module-name="pytest02" />
   </component>
 </module>
