@@ -126,7 +126,7 @@ def liner(scr, dic, line_list):
                         pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
                 else:   # 마지막 section
                     if dic[f"4{i+4}-4{i+5}-0"]["conn"]:
-                        pygame.draw.line(scr, l_color[i+1], [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
+                        pygame.draw.line(scr, l_color[i], [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
                     else:
                         pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1475)], [set_x(station[lines[i + 1]][0]), set_y(1475)], 5)
 
