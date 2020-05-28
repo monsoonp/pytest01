@@ -10,7 +10,8 @@ RED = (255,   0,   0)
 GREEN = (100, 200,   100)
 BLUE = (0,   0, 255)
 YELLOW = (255, 255, 0)
-RAN_COLOR = (lambda: [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)])
+RAN_COLOR = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+PINK = (255, 200, 200)
 
 pygame.font.init()
 fonts = pygame.font.get_fonts()
@@ -29,7 +30,8 @@ config = {
           "RED": [255, 0, 0],
           "GREEN": [55, 200, 55],
           "BLUE": [0, 0, 255],
-          "YELLOW": [255, 255, 0]
+          "YELLOW": [255, 255, 0],
+          "RANDOM": [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)],
         },
         "station": ["RED", "BLUE", "YELLOW", "GREEN"]
     },
@@ -50,7 +52,7 @@ config = {
 
 station = {  # default 변전소 설정값
     1: {
-        "color": [RED, BLUE, YELLOW, GREEN, RAN_COLOR],
+        "color": [RED, BLUE, YELLOW, GREEN, PINK],
         "direction": True,
         "line": {"1차": [], "2차": ["start", "40-41-0", "41-42-0", "42-43-0", "end"]},
         "start": [0, None],
