@@ -28,6 +28,7 @@ station_number = 1
 # size = (1800, 1000)
 video_infos = pygame.display.Info()  # pygame, 화면정보
 width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, 높이
+isHalf = False
 
 # 화면 띄우기
 # 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만)
@@ -431,6 +432,14 @@ while not done:
                 x_position = x_position - 100 if event.key == 275 else x_position + 100
             elif event.key in [pygame.K_UP, pygame.K_DOWN]:
                 y_position = y_position - 100 if event.key == 274 else y_position + 100
+            elif event.key in [pygame.K_h]:
+                if not isHalf:
+                    width = int(width/2)
+                    isHalf = True
+                else:
+                    width = int(width * 2)
+                    isHalf = False
+                screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
 
     if menu:
         pygame.display.set_caption("MENU")
