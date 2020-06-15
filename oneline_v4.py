@@ -5,7 +5,7 @@ import sys
 import json
 import subprocess
 
-import oneline_config
+import sld_config
 
 pygame.init()
 
@@ -27,20 +27,22 @@ station_number = 1
 # 화면 사이즈, 튜플 형식
 # size = (1800, 1000)
 video_infos = pygame.display.Info()  # pygame, 화면정보
-width, height = video_infos.current_w, video_infos.current_h  # 화면 너비, 높이
+width, height = video_infos.current_w, video_infos.current_h # 화면 너비, 높이
 isHalf = False
+
 
 # 화면 띄우기
 # 더블 버퍼, 리사이즈, 하드웨어 가속 pygame.HWSURFACE (전체화면에서만)
-screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
+screen = pygame.display.set_mode((int(width/2), height), pygame.DOUBLEBUF | pygame.RESIZABLE)
 
 title = ""
 # 화면 제목
 pygame.display.set_caption("{0} 단선도".format(title))
-config = oneline_config.config
-station = oneline_config.station[1]
-x_position = 2400
+config = sld_config.config
+station = sld_config.station[1]
+x_position = 4800
 y_position = 2000
+
 check = True
 
 
@@ -138,7 +140,7 @@ def liner(scr, dic, line_list):
                         pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
                 else:
                     if dic[f"4{i-1}-4{i}-0"]["conn"]:
-                        pygame.draw.line(scr, l_color[i + 1], [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
+                        pygame.draw.line(scr, l_color[i], [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
                     else:
                         pygame.draw.line(scr, GREY, [set_x(station[lines[i]][0]), set_y(1205)], [set_x(station[lines[i + 1]][0]), set_y(1205)], 5)
 
@@ -424,9 +426,9 @@ while not done:
             elif event.key == pygame.K_r:
                 x_position = 2400
                 y_position = 2000
-            elif event.key in [pygame.K_1, pygame.K_4]:  # , pygame.K_2, pygame.K_3, pygame.K_5, pygame.K_6, pygame.K_7
+            elif event.key in [pygame.K_1, pygame.K_3, pygame.K_4]:  # , pygame.K_2, pygame.K_3, pygame.K_5, pygame.K_6, pygame.K_7
                 station_number = event.key - 48  # 0 = 48
-                station = oneline_config.station[station_number]
+                station = sld_config.station[station_number]
                 menu = False
             elif event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 x_position = x_position - 100 if event.key == 275 else x_position + 100
@@ -440,6 +442,7 @@ while not done:
                     width = int(width * 2)
                     isHalf = False
                 screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.RESIZABLE)
+
 
     if menu:
         pygame.display.set_caption("MENU")
